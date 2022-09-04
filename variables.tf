@@ -36,3 +36,9 @@ variable "schedule_expression" {
   description = "Schedule expression of crawler. (See https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html)"
   default     = "rate(1 hour)"
 }
+
+variable "timeout" {
+  type        = number
+  description = "Timeout in seconds of of crawler/lambda functions."
+  default     = 10
+}

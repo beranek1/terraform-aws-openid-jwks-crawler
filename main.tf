@@ -56,14 +56,13 @@ resource "aws_iam_role_policy_attachment" "crawler" {
 }
 
 resource "aws_lambda_function" "crawler" {
-  filename      = data.archive_file.crawler.output_path
-  function_name = "${var.prefix}function"
-  role          = aws_iam_role.crawler.arn
-  handler       = "index.handler"
-
+  filename         = data.archive_file.crawler.output_path
+  function_name    = "${var.prefix}function"
+  role             = aws_iam_role.crawler.arn
+  handler          = "index.handler"
   source_code_hash = data.archive_file.crawler.output_base64sha256
-
-  runtime = "nodejs16.x"
+  runtime          = "nodejs16.x"
+  timeout          = var.timeout
 
   environment {
     variables = {
@@ -92,4 +91,16 @@ resource "aws_cloudwatch_event_target" "crawler" {
   rule = aws_cloudwatch_event_rule.crawler.name
 
   arn = aws_lambda_function.crawler.arn
+}
+
+resource "aws_lambda_invocation" "crawler" {
+  function_name = aws_lambda_function.crawler.function_name
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_lambda_function.crawler.environment
+    ]))
+  }
+
+  input = jsonencode({})
 }
